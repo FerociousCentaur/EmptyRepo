@@ -11,6 +11,8 @@ const { createTables } = require('./db/migrations');
 const User = require('./models/user');
 const Post = require('./models/post');
 const authMiddleware = require('./middleware/auth');
+const RateLimiter = require('./rate-limiter');
+const rateLimiter = new RateLimiter();
 
 dotenv.config();
 
@@ -24,6 +26,10 @@ app.use(session({
     resave: false,
     saveUninitialized: false
 }));
+app.use(rateLimiter.middleware({
+    limit: 3600,          // requests per window
+    windowSeconds: 3600  // 1 hour window
+  }));
 
 // Initialize database
 createTables().catch(console.error);
